@@ -1,0 +1,6 @@
+Installation Reminder
+Before installation, please create a Telegram bot and provide the following information:
+
+Token ID: Obtain this from BotFather when you create your bot.
+Chat ID: Send a message to your bot and retrieve your Chat ID using the Telegram API.
+Make sure to input your Token ID and Chat ID during the installation process to ensure proper functionality.
