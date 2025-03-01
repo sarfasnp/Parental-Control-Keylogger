@@ -4,3 +4,6 @@ Before installation, please create a Telegram bot and provide the following info
 Token ID: Obtain this from BotFather when you create your bot.
 Chat ID: Send a message to your bot and retrieve your Chat ID using the Telegram API.
 Make sure to input your Token ID and Chat ID during the installation process to ensure proper functionality.
+
+also give the full permission for the installation 
+"chmod +x install.sh"
